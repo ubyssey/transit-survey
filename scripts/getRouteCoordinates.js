@@ -43,7 +43,7 @@ iterateRoutes(extractKmz);
 function addNewRoute(newRoute){
 	json.RouteList.push(newRoute);
 	if(json.RouteList.length >= total){
-		fs.writeFile('routes.json', JSON.stringify(json));
+		fs.writeFile('../data/routes.json', JSON.stringify(json));
 	}
 }
 

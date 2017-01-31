@@ -8,8 +8,8 @@ import csv
 import json
 
 # Open your files
-jsonfile = open('SurveyResultsJSON.json', 'w')
-csvfile = open('SurveyResultsCSV.csv', 'r')
+jsonfile = open('../data/SurveyResultsJSON.json', 'w')
+csvfile = open('../data/SurveyResultsCSV.csv', 'r')
 
 # Fieldnames for the JSON file
 fieldnames = ('Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'Q8', 'Q9', 'Q10',
