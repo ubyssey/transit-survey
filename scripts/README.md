@@ -4,13 +4,10 @@ usage:
 
 (command line)
 
-	npm install unzip
-	
-	npm install xmldom
-	
+	npm install 
 	node getRouteCoordinates
 	
-	
+npm - xmldom and unzip modules required, included in package.json
 If API key fails request a new one on https://developer.translink.ca/ServicesRtti
 
 JSON structure:
