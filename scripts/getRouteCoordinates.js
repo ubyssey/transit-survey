@@ -5,10 +5,11 @@ var http = require('http');
 var unzip = require('unzip');
 var DOMParser = require('xmldom').DOMParser;
 
+var apiKey = 'V8AZONNoNOrhoS9lxq3k';
 var routeNums = ['2','3','4','5','6','7','8','9','10','14',
 				'15','16','17','19','20','22','23','25','26','27',
 				'28','29','32','33','41','43','44','49','50','84',
-				'99','100','C18', 'C20'];
+				'96','99','100','258','480','C18', 'C20'];
 //C19, skytrain, seabus, WCE not available
 	
 var total = 0;
@@ -19,9 +20,19 @@ if(!fs.existsSync('./kml')){
 if(!fs.existsSync('./kmz')){
 	fs.mkdirSync('./kmz');
 }
+var json = {};
 
+iterateRoutes();
+extractKmz(fs.readdirSync('./kmz/'));
+readKml(fs.readdirSync('./kml/'));
 
-function iterateRoutes(callback){
+process.stdout.write(currentTime() + ' Writing to JSON file... ');
+fs.writeFileSync('../data/routes.json', JSON.stringify(json));
+process.stdout.write('done\n');
+process.exit(0);
+
+function iterateRoutes(){
+	process.stdout.write(currentTime() + ' Calling Translink API... ');
 	for(var n in routeNums){
 		try{
 			num = parseRouteNumber(routeNums[n]);
@@ -33,70 +44,58 @@ function iterateRoutes(callback){
 			continue;
 		}
 	}
-	setTimeout(function(){callback(fs.readdirSync('./kmz/'));},10000);
+	process.stdout.write('done\n');
 }
 
-var json = {};
-iterateRoutes(extractKmz);
-
-
-function addNewRoute(newRoute){
-	json.RouteList.push(newRoute);
-	if(json.RouteList.length >= total){
-		fs.writeFile('../data/routes.json', JSON.stringify(json));
-	}
-}
-
+//Unzip KMZ files
 function extractKmz(files){
+	process.stdout.write(currentTime() + ' Extracting KMZ files... ');
 	for(var n in files){
 		fs.createReadStream('./kmz/' + files[n]).pipe(unzip.Extract(
 				{ path: './kml/' + files[n].substring(0,files[n].length-4)}));
 	}
-	
-	//Create JSON file with all route coordinates
-	setTimeout(function(){readKml(fs.readdirSync('./kml/'));}, 10000);
+	process.stdout.write('done\n');
 }
 
+//Create JSON file with all route coordinates
 function readKml(files){
+	process.stdout.write(currentTime() + ' Reading KML files... ');
 	json.name = "Routes";
 	json.RouteList = [];
 	for(var n in files){
-		var stream = fs.createReadStream('./kml/' + files[n] + '/doc.kml');
-		var str = '';
-		stream.on('data', function(chunk){
-			str += chunk;
-		});
-		stream.on('end', function(){
-			var parser = new DOMParser();
-			var xml = parser.parseFromString(str, "text/xml");
-			var newRoute = {};
-			var folder = xml.getElementsByTagName("Folder")[0];
+		var content = fs.readFileSync('./kml/' + files[n] + '/doc.kml', 'utf8');
+		var parser = new DOMParser();
+		var xml = parser.parseFromString(content, "text/xml");
+		var newRoute = {};
+		var folder = xml.getElementsByTagName("Folder")[0];
 			
-			var routeName = folder.getElementsByTagName("name")[0].firstChild.nodeValue;
-			newRoute.name = routeName.substring(0, routeName.indexOf('-'));
+		var routeName = folder.getElementsByTagName("name")[0].firstChild.nodeValue;
+		newRoute.name = routeName.substring(0, routeName.indexOf('-'));
 			
-			newRoute.Points = [];
-			var ls = xml.getElementsByTagName("coordinates");
-			var lng, lat, c, cs;
-			for(var n = 0; n < ls.length; n++){
-				c = ls[n].firstChild.nodeValue;
-				cs = c.split(/,| /);
-				lng = cs[0];
-				lat = cs[1];
-				newRoute.Points.push({'lat': lat, 'lng': lng});
-			}
-			//Get last coordinate
-			c = ls[ls.length-1].firstChild.nodeValue;
-			cs = c.split(/,| /); 
-			lng = cs[2];
-			lat = cs[3];
+		newRoute.Points = [];
+		var ls = xml.getElementsByTagName("coordinates");
+		var lng, lat, c, cs;
+		for(var n = 0; n < ls.length; n++){
+			c = ls[n].firstChild.nodeValue;
+			cs = c.split(/,| /);
+			lng = cs[0];
+			lat = cs[1];
+			//ignore latter coordinate pair (duplicate)
 			newRoute.Points.push({'lat': lat, 'lng': lng});
-			
-			addNewRoute(newRoute);
-		});
+		}
+		//Get last coordinate pair
+		c = ls[ls.length-1].firstChild.nodeValue;
+		cs = c.split(/,| /); 
+		lng = cs[3];
+		lat = cs[4];
+		newRoute.Points.push({'lat': lat, 'lng': lng});
+		
+		json.RouteList.push(newRoute);
 	}
+	process.stdout.write('done\n');
 }
 
+// Transforms route number into 3-character code by adding leading 0's
 function parseRouteNumber(routeNum){
 	if(routeNum.length > 3 || routeNum.length <= 0) throw 'Invalid route number' + routeNum;
 	if(routeNum.charAt(0) != 'C' && routeNum.charAt(0) != 'N'){
@@ -110,6 +109,18 @@ function parseRouteNumber(routeNum){
 	return routeNum;
 }
 
+function currentTime(){
+	var time = new Date();
+	var addLeadingZeros = function(num){
+		num = num + '';
+		if(num.length < 2)
+			return '0' + num;
+		return num;
+	}
+	return '[' + addLeadingZeros(time.getHours()) + ':' + addLeadingZeros(time.getMinutes()) + ':' +
+		addLeadingZeros(time.getSeconds()) + '.' + time.getMilliseconds() + ']';
+}
+
 function getData(routeNum){
 	var str = '';
 
@@ -117,7 +128,7 @@ function getData(routeNum){
 		host: 'api.translink.ca',
 		path: '/RTTIAPI/V1/routes/' + 
 				routeNum +
-				'?apiKey=V8AZONNoNOrhoS9lxq3k',
+				'?apiKey=' + apiKey,
 		headers: {
 			'content-type': 'application/JSON'
 		}
