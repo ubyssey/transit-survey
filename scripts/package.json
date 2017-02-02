@@ -1,0 +1,7 @@
+{
+	"name": "transit-survey",
+	"dependencies": {
+		"unzip": "^0.1.11",
+		"xmldom": "^0.1.27"
+	}
+}
