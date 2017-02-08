@@ -1,0 +1,41 @@
+<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+<link href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css" rel="stylesheet"> 
+
+<script>
+
+var ss = [
+  [1, 5, 10, 5, 10],
+  [2, 6, 11, 5, 10],
+  [3, 7, 12, 5, 10]
+];
+var loadTable = function () {
+    $('#route-chart').DataTable({
+         "data": ss,
+         "ordering": true,
+         "paging": false,
+         "columnDefs": [
+         	{"name": "Routes"},
+         	{"name": "How Busy(Crowded)"},
+         	{"name": "Number of Students"}
+         ]
+    });
+}
+
+window.onload = function() {
+    loadTable();
+}
+
+</script>
+<table id="route-chart">
+  <thead>
+    <th>Route</th>
+    <th>How Crowded</th>
+    <th>Most used</th>
+    <th>Lateness</th>
+    <th>Skipping stops?</th>
+  </thead>
+</table>

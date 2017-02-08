@@ -2,6 +2,7 @@
 	"name": "transit-survey",
 	"dependencies": {
 		"unzip": "^0.1.11",
-		"xmldom": "^0.1.27"
+		"xmldom": "^0.1.27",
+		"datatables.net": "1.10.9"
 	}
 }
