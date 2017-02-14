@@ -10,7 +10,7 @@ var routeNums = ['2','3','4','5','6','7','8','9','10','14',
 				'15','16','17','19','20','22','23','25','26','27',
 				'28','29','32','33','41','43','44','49','50','84',
 				'96','99','100','258','480','C18', 'C20'];
-//C19, skytrain, seabus, WCE not available
+//Skytrain, seabus, WCE not available
 	
 var total = 0;
 
@@ -25,6 +25,9 @@ var json = {};
 iterateRoutes();
 extractKmz(fs.readdirSync('./kmz/'));
 readKml(fs.readdirSync('./kml/'));
+
+//Add routes not available on translink API
+addExtraRoutes();
 
 process.stdout.write(currentTime() + ' Writing to JSON file... ');
 fs.writeFileSync('../data/routes.json', JSON.stringify(json));
@@ -71,6 +74,9 @@ function readKml(files){
 			
 		var routeName = folder.getElementsByTagName("name")[0].firstChild.nodeValue;
 		newRoute.name = routeName.substring(0, routeName.indexOf('-'));
+		newRoute.results = 0;
+		newRoute.crowded = 0;
+		newRoute.popularity = 0;
 			
 		newRoute.Points = [];
 		var ls = xml.getElementsByTagName("coordinates");
@@ -78,16 +84,16 @@ function readKml(files){
 		for(var n = 0; n < ls.length; n++){
 			c = ls[n].firstChild.nodeValue;
 			cs = c.split(/,| /);
-			lng = cs[0];
-			lat = cs[1];
+			lng = parseFloat(cs[0]);
+			lat = parseFloat(cs[1]);
 			//ignore latter coordinate pair (duplicate)
 			newRoute.Points.push({'lat': lat, 'lng': lng});
 		}
 		//Get last coordinate pair
 		c = ls[ls.length-1].firstChild.nodeValue;
 		cs = c.split(/,| /); 
-		lng = cs[3];
-		lat = cs[4];
+		lng = parseFloat(cs[3]);
+		lat = parseFloat(cs[4]);
 		newRoute.Points.push({'lat': lat, 'lng': lng});
 		
 		json.RouteList.push(newRoute);
@@ -170,4 +176,92 @@ function getData(routeNum){
 	}
 
 	var req = http.request(options, callback).end();
+}
+
+function addExtraRoutes(){
+	//Evergreen Line
+	var route = {};	
+	route.name = "Evergreen Line";
+	route.results = 0;
+	route.crowded = 0;
+	route.popularity = 0;
+	route.Points = [{"lat":49.248507,"lng":-122.897015},{"lat":49.261419,"lng":-122.889805},
+					{"lat":49.277997,"lng":-122.845860},{"lat":49.277325,"lng":-122.828178},
+					{"lat":49.274637,"lng":-122.800884},{"lat":49.280460,"lng":-122.793846},
+					{"lat":49.285611,"lng":-122.791786}];
+	
+	json.RouteList.push(route);
+	
+	//Millennium Line
+	route = {};
+	route.name = "Millennium Line";
+	route.results = 0;
+	route.crowded = 0;
+	route.popularity = 0;
+	route.Points = [{"lat":49.285863,"lng":-123.112020},{"lat":49.285667,"lng":-123.120217},
+					{"lat":49.283288,"lng":-123.116140},{"lat":49.279313,"lng":-123.109188},
+					{"lat":49.273181,"lng":-123.100476},{"lat":49.262652,"lng":-123.069277},
+					{"lat":49.248394,"lng":-123.055887},{"lat":49.244332,"lng":-123.046274},
+					{"lat":49.238504,"lng":-123.032069},{"lat":49.229789,"lng":-123.012714},
+					{"lat":49.225782,"lng":-123.003788},{"lat":49.220092,"lng":-122.988467},
+					{"lat":49.212243,"lng":-122.959156},{"lat":49.199990,"lng":-122.949200},
+					{"lat":49.201448,"lng":-122.912765},{"lat":49.204841,"lng":-122.906113},
+					{"lat":49.204420,"lng":-122.874184},{"lat":49.198924,"lng":-122.850666},
+					{"lat":49.189670,"lng":-122.847919},{"lat":49.182769,"lng":-122.844658}];
+
+	json.RouteList.push(route);
+	
+	//Expo Line
+	route = {};
+	route.name = "Expo Line";
+	route.results = 0;
+	route.crowded = 0;
+	route.popularity = 0;
+	route.Points = [{"lat":49.265704,"lng":-123.079147},{"lat":49.262652,"lng":-123.069277},
+					{"lat":49.258899,"lng":-123.045115},{"lat":49.260831,"lng":-123.033056},
+					{"lat":49.265004,"lng":-123.013530},{"lat":49.266432,"lng":-123.001771},
+					{"lat":49.264752,"lng":-122.982202},{"lat":49.258207,"lng":-122.964091},
+					{"lat":49.254641,"lng":-122.939243},{"lat":49.253409,"lng":-122.918172},
+					{"lat":49.248507,"lng":-122.897015}];
+
+	json.RouteList.push(route);
+	
+	//Canada Line
+	route = {};
+	route.name = "Canada Line";
+	route.results = 0;
+	route.crowded = 0;
+	route.popularity = 0;
+	route.Points = [{"lat":49.285863,"lng":-123.112020},{"lat":49.282504,"lng":-123.118587},
+					{"lat":49.274525,"lng":-123.121891},{"lat":49.266516,"lng":-123.115754},
+					{"lat":49.262960,"lng":-123.114510},{"lat":49.249263,"lng":-123.115883},
+					{"lat":49.233180,"lng":-123.116655},{"lat":49.226342,"lng":-123.116913},
+					{"lat":49.209383,"lng":-123.116891},{"lat":49.195531,"lng":-123.126054},
+					{"lat":49.183976,"lng":-123.136482},{"lat":49.174746,"lng":-123.136611},
+					{"lat":49.168096,"lng":-123.136268},{"lat":49.168096,"lng":-123.136268}];
+
+	json.RouteList.push(route);
+	
+	//Seabus
+	route = {};
+	route.name = "Seabus";
+	route.results = 0;
+	route.crowded = 0;
+	route.popularity = 0;
+	route.Points = [{"lat": 49.286787,"lng": -123.110433},{"lat":49.30996,"lng":-123.082795}];
+
+	json.RouteList.push(route);
+	
+	//West Coast Express
+	route = {};
+	route.name = "West Coast Express";
+	route.results = 0;
+	route.crowded = 0;
+	route.popularity = 0;
+	route.Points = [{"lat":49.285863,"lng":-123.112020},{"lat":49.277969,"lng":-122.845860},
+					{"lat":49.274609,"lng":-122.800798},{"lat":49.261503,"lng":-122.774105},
+					{"lat":49.225838,"lng":-122.688446},{"lat":49.216532,"lng":-122.666130},
+					{"lat":49.212271,"lng":-122.605233},{"lat":49.133879,"lng":-122.304697}];
+
+	json.RouteList.push(route);
 }

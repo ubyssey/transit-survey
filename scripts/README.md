@@ -16,4 +16,4 @@ ROUTES object - name (string), RouteList (array of ROUTE objects)
 
 ROUTE object - name (string), Points (array of POINT objects)
 
-POINT object - lat (string), lng (string)
+POINT object - lat (number), lng (number)
